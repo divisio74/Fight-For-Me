@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Admin - Conversations</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  input, button { padding: 5px; margin: 5px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+  th, td { border: 1px solid #ddd; padding: 8px; }
+  th { background-color: #f2f2f2; }
+</style>
+</head>
+<body>
+<h1>Admin - Conversations</h1>
+
+<div>
+  <label>Utilisateur: <input type="text" id="filterUser" placeholder="Nom utilisateur" /></label>
+  <label>Date début: <input type="date" id="filterFrom" /></label>
+  <label>Date fin: <input type="date" id="filterTo" /></label>
+  <button onclick="loadConversations()">Filtrer</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Utilisateur</th>
+      <th>Message</th>
+      <th>Réponse IA</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody id="convTableBody"></tbody>
+</table>
+
+<script>
+async function loadConversations() {
+  const user = document.getElementById('filterUser').value;
+  const fromDate = document.getElementById('filterFrom').value;
+  const toDate = document.getElementById('filterTo').value;
+
+  let url = `/api/admin/conversations?`;
+  if (user) url += `user=${encodeURIComponent(user)}&`;
+  if (fromDate) url += `fromDate=${fromDate}&`;
+  if (toDate) url += `toDate=${toDate}&`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const tbody = document.getElementById('convTableBody');
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='5'>Aucune conversation trouvée</td></tr>";
+    return;
+  }
+
+  for (const conv of data) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${conv.id}</td>
+      <td>${conv.username || 'Inconnu'}</td>
+      <td>${conv.message}</td>
+      <td>${conv.response}</td>
+      <td>${new Date(conv.timestamp).toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// Charger les conversations au chargement de la page
+loadConversations();
+</script>
+
+</body>
+</html>
