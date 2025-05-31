@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fight For Me - Auth & Chat</title>
+  <style>
+    #chatSection {
+      display: none;
+      margin-top: 20px;
+    }
+    #chatBox {
+      border: 1px solid #ccc;
+      height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f9f9f9;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fight For Me</h1>
+
+  <h2>Inscription</h2>
+  <form id="registerForm">
+    <input type="text" id="regUsername" placeholder="Nom d'utilisateur" required />
+    <input type="password" id="regPassword" placeholder="Mot de passe" required />
+    <button type="submit">S'inscrire</button>
+  </form>
+  <p id="registerMessage"></p>
+
+  <h2>Connexion</h2>
+  <form id="loginForm">
+    <input type="text" id="loginUsername" placeholder="Nom d'utilisateur" required />
+    <input type="password" id="loginPassword" placeholder="Mot de passe" required />
+    <button type="submit">Se connecter</button>
+  </form>
+  <p id="loginMessage"></p>
+
+  <!-- Section Chat -->
+  <section id="chatSection">
+    <h2>Chat avec Jessica</h2>
+    <div id="chatBox"></div>
+    <form id="chatForm">
+      <input id="chatInput" type="text" placeholder="Tape ton message..." autocomplete="off" />
+      <button type="submit">Envoyer</button>
+    </form>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const backendUrl = "https://fight-for-me-production.up.railway.app/api/auth";
+    let socket;
+    let currentUser = null;
+    const iaId = "1"; // id fixe pour l'instant, tu pourras gérer plusieurs IA plus tard
+
+    // Fonction pour afficher un message dans le chat
+    function addChatMessage(msg) {
+      const chatBox = document.getElementById("chatBox");
+      const p = document.createElement("p");
+      p.textContent = msg;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Inscription
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("regUsername").value;
+      const password = document.getElementById("regPassword").value;
+
+      const res = await fetch(`${backendUrl}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      document.getElementById("registerMessage").textContent = data.message || "Erreur.";
+    });
+
+    // Connexion
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("loginUsername").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const res = await fetch(`${backendUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      document.getElementById("loginMessage").textContent = data.message || "Erreur.";
+
+      if (res.ok) {
+        currentUser = username;
+
+        if (data.role === "admin") {
+          window.location.href = "/admin"; // redirection vers la page admin
+        } else {
+          startChat(); // sinon on lance le chat normal
+        }
+      }
+    });
+
+
+    // Initialisation du chat après connexion
+    function startChat() {
+      document.getElementById("chatSection").style.display = "block";
+      // Optionnel : cacher les formulaires de connexion/inscription
+      document.getElementById("registerForm").style.display = "none";
+      document.getElementById("loginForm").style.display = "none";
+
+      socket = io();
+
+      socket.emit("join", { userId: currentUser, iaId });
+
+      socket.on("message", (msg) => {
+        addChatMessage(msg);
+      });
+
+      // Envoi des messages via le formulaire chat
+      document.getElementById("chatForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const input = document.getElementById("chatInput");
+        const message = input.value.trim();
+        if (!message) return;
+        socket.emit("chat_message", { userId: currentUser, iaId, message });
+        addChatMessage(`Vous: ${message}`);
+        input.value = "";
+      });
+    }
+  </script>
+</body>
+</html>
