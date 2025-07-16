@@ -1,4 +1,4 @@
-// socketHandler.js
+
 const { updateUserReport } = require("./raport");
 const { saveConversation } = require("./save_conv");
 const { getUserIdByUsername } = require("./userbyuser");
@@ -56,7 +56,6 @@ function setupSocket(io, openai) {
 
         await saveConversation(numericUserId, message, iaResponse);
 
-        // Mettre à jour le rapport utilisateur (optionnel, car tu viens de le récupérer)
         try {
           const updatedReport = await updateUserReport(numericUserId, openai, io);
           console.log("Rapport utilisateur mis à jour :", updatedReport);

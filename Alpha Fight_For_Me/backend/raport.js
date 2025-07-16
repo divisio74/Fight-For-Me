@@ -72,7 +72,7 @@ Fournis le rapport au format texte, bien structuré et clair.
               if (scoreMatch && scoreMatch[1]) {
                 score = parseInt(scoreMatch[1], 10);
                 if (isNaN(score) || score < 0 || score > 100) {
-                  score = 0; // valeur par défaut si mauvaise note
+                  score = 0;
                 }
               }
 

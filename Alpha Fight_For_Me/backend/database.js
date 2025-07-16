@@ -2,7 +2,6 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("./backend/db.sqlite");
 
 db.serialize(() => {
-  // Table users avec la colonne 'role'
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,7 +13,7 @@ db.serialize(() => {
     )
   `);
 
-  // Table conversations
+
   db.run(`
     CREATE TABLE IF NOT EXISTS conversations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

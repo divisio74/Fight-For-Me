@@ -27,18 +27,18 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Session setup
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'supersecret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
 }));
 
-// Middlewares
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', "frontend")));
 
-// Auth middlewares
+
 function isAuthenticated(req, res, next) {
   if (req.session && req.session.user) return next();
   return res.status(401).send("Non authentifié");
@@ -52,7 +52,6 @@ function isAdmin(req, res, next) {
 app.use("/api/auth", authRoutes);
 
 
-// Routes HTML
 app.get("/chat", isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, '..', "frontend", "chat.html"));
 });
@@ -61,7 +60,6 @@ app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, '..', "frontend", "admin.html"));
 });
 
-// API admin - conversations filtrées
 app.get("/api/admin/conversations", isAuthenticated, isAdmin, (req, res) => {
   const { user, fromDate, toDate } = req.query;
 
@@ -94,10 +92,10 @@ app.get("/api/admin/conversations", isAuthenticated, isAdmin, (req, res) => {
   });
 });
 
-// Socket.io
+
 setupSocket(io, openai);
 
-// Serveur
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {

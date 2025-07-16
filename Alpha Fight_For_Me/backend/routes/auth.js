@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const db = require("../database");
 const router = express.Router();
 
-// Inscription
+
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
   const hashed = await bcrypt.hash(password, 10);
@@ -20,7 +20,7 @@ router.post("/register", async (req, res) => {
   );
 });
 
-// Connexion
+
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -33,7 +33,6 @@ router.post("/login", (req, res) => {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 
-    // Stocke les infos utilisateur dans la session
     req.session.user = {
       username: user.username,
       role: user.role,

@@ -36,7 +36,7 @@
 <body>
   <h1>Fight For Me - Chat IA</h1>
 
-  <!-- ✅ Score affiché ici -->
+
   <div id="scoreContainer">
     Score de relation : <span id="scoreValue">0</span>/100
   </div>
@@ -50,9 +50,8 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io("https://fight-for-me-production.up.railway.app/"); // adapte l'URL si besoin
+    const socket = io("https://fight-for-me-production.up.railway.app/");
 
-    // Remplace ces variables par l'ID utilisateur et IA réelle
     const userId = localStorage.getItem("username") || "inconnu";
     const iaId = "1";
 
@@ -61,10 +60,10 @@
     const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
 
-    // Rejoindre la room privée user-IA
+  
     socket.emit("join", { userId, iaId });
 
-    // Afficher un message dans le chat
+
     function addMessage(sender, message) {
       const div = document.createElement("div");
       div.className = sender === "IA" ? "ia" : "user";
@@ -73,23 +72,20 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Écouter les messages de l'IA
     socket.on("message", (msg) => {
       addMessage("Jessica", msg.replace(/^IA:\s*/, ""));
     });
 
-    // Envoyer un message
     chatForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const message = chatInput.value.trim();
       if (!message) return;
 
-      addMessage("Toi", message); // Affiche direct côté client
+      addMessage("Toi", message);
       socket.emit("chat_message", { userId, iaId, message });
       chatInput.value = "";
     });
 
-    // ✅ Réception du score mis à jour
     socket.on("score_update", ({ score }) => {
       document.getElementById("scoreValue").textContent = score;
     });
